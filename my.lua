@@ -1,9 +1,18 @@
 # csdc
-explore_auto_rest = true
-
 -- To use this create a macro with the following function call in game
 -- ===animate
-auto_butcher = very full
+
+-- you can customize this level of hungriness
+auto_butcher = full
+
+explore_greedy = true
+explore_stop = items,greedy_items,greedy_pickup
+explore_stop += greedy_sacrificeable
+explore_stop += greedy_visited_item_stack,stairs,shops,altars,gates
+
+explore_auto_rest = true
+auto_eat_chunks = true
+
 : function animate()
 :   local is_safe = (first_monster == nil)
 :   local mp, max_mp = you.mp()
@@ -21,10 +30,6 @@ auto_butcher = very full
 :   local you_know_animate_skeleton = known_spells["Animate Skeleton"] and (spells.fail("Animate Skeleton") < 20) and (mp>1)
 :   local you_know_animate_dead = known_spells["Animate Dead"] and (spells.fail("Animate Dead") < 20) and (mp>4)
 :
-:   -- if starving and no near corps
-:   if (starving or near_starving) then
-:       sendkeys('o')
-:   end
 :
 :   if should_rest then
 :       crawl.mpr("<green>should rest.</green>")
@@ -38,8 +43,12 @@ auto_butcher = very full
 :   if ( on_corpses() and (you_know_sublimation or you_know_animate_skeleton or you_know_animate_dead) ) then
 :       crawl.mpr("<cyan>Autocasting zu</cyan>")
 :       sendkeys('zu')
+:       if ( string.find(crawl.messages(3), escape("There is nothing here that can be animated")) ) then
+:         sendkeys('o')
+:       end
+:
 :       sendkeys('*e')
-:       if (string.find(crawl.messages(10), escape("You travel at normal speed"))) then
+:       if ( string.find(crawl.messages(3), escape("You travel at normal speed")) ) then
 :           sendkeys('*e')
 :       end
 :   end
@@ -107,7 +116,6 @@ auto_butcher = very full
 >
 
 
-
 #########################
 # Good Beginner Options #
 #########################
@@ -116,10 +124,6 @@ default_manual_training = true
 autofight_stop = 80
 
 show_more = false
-
-#auto_butcher = hungry
-#auto_butcher = true
-auto_eat_chunks = true
 
 #################
 # Lua Functions #

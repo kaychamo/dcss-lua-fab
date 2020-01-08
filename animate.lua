@@ -1,6 +1,17 @@
 -- To use this create a macro with the following function call in game
 -- ===animate
-auto_butcher = very full
+
+-- you can customize this level of hungriness
+auto_butcher = full
+
+explore_greedy = true
+explore_stop = items,greedy_items,greedy_pickup
+explore_stop += greedy_sacrificeable
+explore_stop += greedy_visited_item_stack,stairs,shops,altars,gates
+
+explore_auto_rest = true
+auto_eat_chunks = true
+
 : function animate()
 :   local is_safe = (first_monster == nil)
 :   local mp, max_mp = you.mp()
@@ -18,23 +29,29 @@ auto_butcher = very full
 :   local you_know_animate_skeleton = known_spells["Animate Skeleton"] and (spells.fail("Animate Skeleton") < 20) and (mp>1)
 :   local you_know_animate_dead = known_spells["Animate Dead"] and (spells.fail("Animate Dead") < 20) and (mp>4)
 :
-:   -- if starving and no near corps
-:   if (starving or near_starving) then
-:       sendkeys('o')
-:   end
 :
 :   if should_rest then
 :       crawl.mpr("<green>should rest.</green>")
 :       if can_cast_regen then
 :           crawl.mpr("<green>Autocasting Regen.</green>")
-:           sendkeys('zr')
+:           sendkeys('ze')
 :       end
 :       sendkeys('5')
 :   end
 :
-:   if ( on_corpses() and (you_know_sublimation or you_know_animate_skeleton or you_know_animate_dead) ) then
+:   if ( on_corpses() and (you_know_animate_skeleton or you_know_animate_dead) ) then
+:       if (you_know_animate_dead) then
+:         crawl.mpr("<cyan>Autocasting zb</cyan>")
+:         sendkeys('zb')
+:         if ( string.find(crawl.messages(3), escape("There is nothing here that can be animated")) ) then
+:           sendkeys('o')
+:         end
+
+:       else if (you_know_animate_skeleton) then
 :       crawl.mpr("<cyan>Autocasting zu</cyan>")
 :       sendkeys('zu')
+:       end
+:
 :       sendkeys('*e')
 :       if (string.find(crawl.messages(10), escape("You travel at normal speed"))) then
 :           sendkeys('*e')
@@ -45,6 +62,10 @@ auto_butcher = very full
 : end
 
 <
+  --function not_full(hp, mp, max_hp, max_mp)
+  --  return ((hp < max_hp) or (mp < max_mp))
+  --end
+
   function not_full(hp, mp, max_hp, max_mp)
     local you_are_mummy = string.find(you.race(), "Mummy")
     local you_are_deep_dwarf = string.find(you.race(), "Deep Dwarf")
